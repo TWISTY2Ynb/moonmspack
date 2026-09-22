@@ -157,3 +157,23 @@ fn bytes_to_array(data : Bytes) -> Array[Byte] {
 fn array_to_bytes(data : Array[Byte]) -> Bytes {
   Bytes::from_array(data)
 }
+
+///|
+/// Create a bounded reader view for a single archive entry.
+pub fn entry_view(
+  data : Bytes,
+  entry : ArchiveEntry,
+  limits? : Limits = default_limits,
+) -> Reader raise MspackError {
+  if entry.offset < 0 || entry.size < 0 || entry.size > limits.max_output {
+    raise MspackError("invalid entry view")
+  }
+  checked_range(data.length(), entry.offset, entry.size)
+  Reader::new(copy_range(data, offset=entry.offset, size=entry.size, limits~))
+}
+
+///|
+/// Return a stable human-readable archive summary.
+pub fn summary(listing : ArchiveListing) -> String {
+  listing.format + ": " + listing.entries.length().to_string() + " entries"
+}

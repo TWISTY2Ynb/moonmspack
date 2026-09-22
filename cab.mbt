@@ -261,3 +261,39 @@ pub fn inspect_cab_blocks(
   }
   result
 }
+
+///|
+/// Validate the checksum field of a CAB CFDATA block.
+pub fn verify_cab_block_checksum(
+  data : Bytes,
+  block : CabBlock,
+) -> Bool raise MspackError {
+  let header_size = 8
+  checked_range(
+    data.length(),
+    block.offset,
+    header_size + block.compressed_size,
+  )
+  let payload = copy_range(
+    data,
+    offset=block.offset + header_size,
+    size=block.compressed_size,
+  )
+  checksum32(payload) == block.checksum || block.checksum == 0
+}
+
+///|
+/// Inspect and validate every block belonging to a CAB entry.
+pub fn validate_cab_entry_blocks(
+  data : Bytes,
+  entry : ArchiveEntry,
+  limits? : Limits = default_limits,
+) -> Array[CabBlock] raise MspackError {
+  let blocks = inspect_cab_blocks(data, entry, limits~)
+  for block in blocks {
+    if !verify_cab_block_checksum(data, block) {
+      raise MspackError("CAB CFDATA checksum mismatch")
+    }
+  }
+  blocks
+}
