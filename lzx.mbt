@@ -158,11 +158,44 @@ pub fn decode_lzx_block(
   if data.length() == 0 && expected != 0 {
     raise MspackError("empty LZX block")
   }
-  // The block framing and aligned/verbatim match tables are decoded in the next port stage.
-  // Returning only an empty stream here would be unsafe, so reject non-empty compressed data.
-  if expected != 0 {
-    raise MspackError("LZX block decoder is not yet complete")
+  if expected == 0 {
+    ignore(window)
+    b""
+  } else {
+    let bits = BitReader::new(data)
+    let block_type = bits.read(3)
+    let block_length_low = bits.read(16)
+    let block_length_high = bits.read(8)
+    let block_length = block_length_low | (block_length_high << 16)
+    if block_length != expected {
+      raise MspackError("LZX block length does not match expected output")
+    }
+    if block_type == 3 {
+      bits.align_word()
+      ignore(bits.read(32))
+      ignore(bits.read(32))
+      ignore(bits.read(32))
+      let (bits, raw) = bits.bytes(expected)
+      ignore(bits)
+      raw
+    } else {
+      raise MspackError("compressed LZX block decoder is not yet complete")
+    }
   }
-  ignore(window)
-  b""
+}
+
+///|
+/// Read whole bytes after the current bit cursor is byte aligned.
+pub fn BitReader::bytes(
+  self : BitReader,
+  count : Int,
+) -> (BitReader, Bytes) raise MspackError {
+  if count < 0 || self.bits != 0 || self.byte_pos + count > self.data.length() {
+    raise MspackError("truncated LZX uncompressed block")
+  }
+  let out : Array[Byte] = []
+  for i in 0..<count {
+    out.push(self.data[self.byte_pos + i])
+  }
+  ({ ..self, byte_pos: self.byte_pos + count, }, Bytes::from_array(out))
 }
