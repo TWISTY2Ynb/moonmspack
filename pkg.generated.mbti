@@ -2,25 +2,61 @@
 package "TWISTY2Ynb/moonmspack"
 
 // Values
+pub fn archive_format_label(ArchiveListing) -> String
+
+pub fn archive_metrics(ArchiveListing) -> ArchiveMetrics
+
+pub fn archive_name_digest(ArchiveListing) -> UInt
+
+pub fn build_lzx_tree(Array[Int]) -> HuffmanTable raise MspackError
+
 pub fn checksum32(Bytes) -> UInt
+
+pub fn chm_section(ChmHeader, Int, Int, limits? : Limits) -> ChmSection raise MspackError
+
+pub fn container_size(ArchiveListing, Int) -> Int
 
 pub fn copy_range(Bytes, offset~ : Int, size~ : Int, limits? : Limits) -> Bytes raise MspackError
 
+pub fn count_entries_with_flags(ArchiveListing, Int) -> Int
+
 pub fn decode_lzx_block(Bytes, window_bits~ : Int, expected~ : Int, limits? : Limits) -> Bytes raise MspackError
+
+pub fn decode_lzx_code_lengths(BitReader, HuffmanTable, Int, previous? : Int) -> (BitReader, Array[Int]) raise MspackError
+
+pub fn decode_lzx_tokens(Array[LzxToken], config? : LzxConfig) -> Bytes raise MspackError
+
+pub fn decode_lzx_tree(BitReader, HuffmanTable, Int) -> (BitReader, HuffmanTable) raise MspackError
 
 pub fn decode_mszip_block(Bytes, expected~ : Int, limits? : Limits) -> Bytes raise MspackError
 
 pub let default_limits : Limits
 
+pub let default_lzx_config : LzxConfig
+
 pub fn detect(Bytes) -> String
+
+pub fn emit_lzx_tokens(LzxWindow, Array[LzxToken], limits? : Limits) -> Bytes raise MspackError
+
+pub fn entries_by_size(ArchiveListing, Int, Int) -> Array[ArchiveEntry]
+
+pub fn entries_in_container(ArchiveListing, Int) -> Array[ArchiveEntry]
+
+pub fn entry_view(Bytes, ArchiveEntry, limits? : Limits) -> Reader raise MspackError
 
 pub fn extract_cab_entry(Bytes, ArchiveEntry, limits? : Limits) -> Bytes raise MspackError
 
 pub fn extract_chm_entry(Bytes, ChmHeader, ArchiveEntry, limits? : Limits) -> Bytes raise MspackError
 
+pub fn find_archive_entry(ArchiveListing, String) -> ArchiveEntry?
+
+pub fn has_unique_entry_names(ArchiveListing) -> Bool
+
 pub fn inspect_cab_blocks(Bytes, ArchiveEntry, limits? : Limits) -> Array[CabBlock] raise MspackError
 
 pub fn inspect_chm(Bytes) -> (ChmHeader, ChmDirectory) raise MspackError
+
+pub fn inspect_lzx_block(Bytes, limits? : Limits) -> LzxBlockHeader raise MspackError
 
 pub fn list(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
 
@@ -28,11 +64,77 @@ pub fn list_cab(Bytes) -> Array[ArchiveEntry] raise MspackError
 
 pub fn list_chm_directory(Bytes, ChmHeader, ChmDirectory, limits? : Limits) -> Array[ArchiveEntry] raise MspackError
 
+pub let lzx_aligned_symbols : Int
+
+pub let lzx_block_aligned : Int
+
+pub let lzx_block_uncompressed : Int
+
+pub let lzx_block_verbatim : Int
+
+pub let lzx_frame_size : Int
+
+pub fn lzx_header_bytes() -> Int
+
+pub fn lzx_literal(Byte) -> LzxToken
+
+pub fn lzx_match(distance~ : Int, length~ : Int) -> LzxToken
+
+pub fn lzx_match_distance(Int, Int, Int, Int, Int, Int) -> Int raise MspackError
+
+pub fn lzx_match_length(Int) -> Int raise MspackError
+
+pub let lzx_max_match : Int
+
+pub let lzx_min_match : Int
+
+pub let lzx_num_chars : Int
+
+pub fn lzx_position_extra_bits(Int) -> Array[Int] raise MspackError
+
+pub fn lzx_position_slots(Int) -> Int raise MspackError
+
+pub let lzx_pretree_symbols : Int
+
+pub let lzx_primary_lengths : Int
+
+pub let lzx_secondary_lengths : Int
+
+pub fn lzx_token_from_symbols(Int, Int, Int) -> LzxToken raise MspackError
+
+pub fn lzx_uses_aligned_tree(Int) -> Bool
+
 pub fn read_cab(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
 
 pub fn read_chm(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
 
 pub fn read_chm_entries(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
+
+pub fn read_chm_section(Bytes, ChmSection, Int, Int, limits? : Limits) -> Bytes raise MspackError
+
+pub fn read_lzx_block_header(BitReader) -> (BitReader, LzxBlockHeader) raise MspackError
+
+pub fn summary(ArchiveListing) -> String
+
+pub fn take_archive_entries(ArchiveListing, Int) -> Array[ArchiveEntry]
+
+pub fn validate_cab_entry_blocks(Bytes, ArchiveEntry, limits? : Limits) -> Array[CabBlock] raise MspackError
+
+pub fn validate_entry_identity(ArchiveListing) -> Unit raise MspackError
+
+pub fn validate_entry_ranges(ArchiveListing, Int) -> Unit raise MspackError
+
+pub fn validate_listing(ArchiveListing, limits? : Limits) -> Unit raise MspackError
+
+pub fn validate_lzx_block_header(LzxBlockHeader, limits? : Limits) -> Unit raise MspackError
+
+pub fn validate_lzx_tokens(Array[LzxToken]) -> Unit raise MspackError
+
+pub fn validate_lzx_tree(Array[Int]) -> Unit raise MspackError
+
+pub fn verify_cab_block_checksum(Bytes, CabBlock) -> Bool raise MspackError
+
+pub fn within_output_budget(ArchiveListing, Int) -> Bool
 
 // Errors
 pub suberror MspackError {
@@ -54,6 +156,16 @@ pub struct ArchiveListing {
   entries : Array[ArchiveEntry]
   warnings : Array[String]
 } derive(Show)
+
+pub struct ArchiveMetrics {
+  entry_count : Int
+  total_size : Int
+  total_compressed_size : Int
+  largest_size : Int
+  largest_index : Int
+  folders : Int
+  files_with_data : Int
+} derive(Eq, Show)
 
 pub struct BitReader {
   data : Bytes
@@ -93,6 +205,12 @@ pub struct ChmHeader {
   num_chunks : Int
 } derive(Eq, Show)
 
+pub struct ChmSection {
+  index : Int
+  offset : Int
+  length : Int
+} derive(Eq, Show)
+
 pub struct Extracted {
   entry : ArchiveEntry
   data : Bytes
@@ -111,6 +229,37 @@ pub struct Limits {
   max_output : Int
   max_window : Int
 } derive(Show)
+
+pub struct LzxBlockHeader {
+  kind : Int
+  length : Int
+  aligned : Bool
+} derive(Eq, Show)
+
+pub struct LzxConfig {
+  window_bits : Int
+  reset_interval : Int
+  max_output : Int
+} derive(Eq, Show)
+
+pub struct LzxDecoder {
+  config : LzxConfig
+  window : LzxWindow
+  mut recent0 : Int
+  mut recent1 : Int
+  mut recent2 : Int
+  mut produced : Int
+} derive(Show)
+pub fn LzxDecoder::emit(Self, LzxToken) -> Unit raise MspackError
+pub fn LzxDecoder::new(config? : LzxConfig) -> Self raise MspackError
+pub fn LzxDecoder::output_size(Self) -> Int
+pub fn LzxDecoder::remember_distance(Self, Int) -> Unit raise MspackError
+pub fn LzxDecoder::reset(Self) -> Unit
+
+pub enum LzxToken {
+  Literal(Byte)
+  Match(distance~ : Int, length~ : Int)
+} derive(Eq, Show)
 
 pub struct LzxWindow {
   size : Int

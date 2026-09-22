@@ -524,7 +524,8 @@ pub fn read_lzx_block_header(
   if kind < lzx_block_verbatim || kind > lzx_block_uncompressed {
     raise MspackError("invalid LZX block type")
   }
-  { kind, length, aligned: kind == lzx_block_aligned, }
+  let header = { kind, length, aligned: kind == lzx_block_aligned, }
+  (bits, header)
 }
 
 ///|
