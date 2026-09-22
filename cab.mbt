@@ -10,16 +10,17 @@ pub fn read_cab(
   if m0 != 0x4D || m1 != 0x53 || m2 != 0x43 {
     raise MspackError("invalid CAB magic")
   }
-  let (r, _) = r.u8()
   let (r, _) = r.u32le()
   let (r, cb_cabinet) = r.u32le()
   let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
   let (r, coff_files) = r.u32le()
   let (r, _) = r.u32le()
+  let (r, _) = r.u8()
+  let (r, _) = r.u8()
   let (r, c_folders) = r.u16le()
   let (r, c_files) = r.u16le()
   let (r, flags) = r.u16le()
+  let (r, _) = r.u16le()
   let (r, _) = r.u16le()
   if c_files > limits.max_entries {
     raise MspackError("archive limit exceeded")
@@ -112,16 +113,17 @@ fn cab_folders(data : Bytes) -> Array[(Int, Int, Int)] raise MspackError {
   if m0 != 0x4D || m1 != 0x53 || m2 != 0x43 {
     raise MspackError("invalid CAB magic")
   }
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
   let (r, _) = r.u8()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
+  let (r, _) = r.u8()
   let (r, count) = r.u16le()
   let (r, _) = r.u16le()
   let (r, flags) = r.u16le()
+  let (r, _) = r.u16le()
   let (r, _) = r.u16le()
   let mut rr = r
   if (flags & 1) != 0 {
@@ -165,6 +167,14 @@ pub fn extract_cab_entry(
     raise MspackError("CAB folder index outside table")
   }
   let (offset, block_count, compression) = folders[entry.folder]
+  println(
+    "DBG " +
+    offset.to_string() +
+    " " +
+    block_count.to_string() +
+    " " +
+    entry.offset.to_string(),
+  )
   let mut cursor = offset
   let output : Array[Byte] = []
   for _ in 0..<block_count {
