@@ -148,3 +148,26 @@ pub fn read_chm_entries(
     warnings: ["compressed CHM content requires LZX decoding"],
   }
 }
+
+///|
+/// Extract an entry from an uncompressed CHM section.
+pub fn extract_chm_entry(
+  data : Bytes,
+  header : ChmHeader,
+  entry : ArchiveEntry,
+  limits? : Limits = default_limits,
+) -> Bytes raise MspackError {
+  if entry.folder != 0 {
+    raise MspackError("compressed CHM sections require LZX decoding")
+  }
+  if entry.size < 0 || entry.size > limits.max_output {
+    raise MspackError("CHM entry exceeds output limit")
+  }
+  let start = header.data_offset + entry.offset
+  checked_range(data.length(), start, entry.size)
+  let output : Array[Byte] = []
+  for i in 0..<entry.size {
+    output.push(data[start + i])
+  }
+  Bytes::from_array(output)
+}

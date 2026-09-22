@@ -3,6 +3,7 @@ pub struct ChmHeader {
   pub version : Int
   pub dir_offset : Int
   pub dir_length : Int
+  pub data_offset : Int
   pub chunk_size : Int
   pub lang_id : Int
   pub num_chunks : Int
@@ -50,6 +51,7 @@ fn parse_chm_header(data : Bytes) -> ChmHeader raise MspackError {
     version: version.to_int(),
     dir_offset,
     dir_length,
+    data_offset,
     chunk_size: 0,
     lang_id: lang_id.to_int(),
     num_chunks: 0,
@@ -202,6 +204,7 @@ pub fn inspect_chm(data : Bytes) -> (ChmHeader, ChmDirectory) raise MspackError 
     version: version.to_int(),
     dir_offset: off_lo.to_int(),
     dir_length: len_lo.to_int(),
+    data_offset: 0,
     chunk_size: 0,
     lang_id: 0,
     num_chunks: 0,
