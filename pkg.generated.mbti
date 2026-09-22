@@ -2,17 +2,35 @@
 package "TWISTY2Ynb/moonmspack"
 
 // Values
+pub fn checksum32(Bytes) -> UInt
+
+pub fn copy_range(Bytes, offset~ : Int, size~ : Int, limits? : Limits) -> Bytes raise MspackError
+
+pub fn decode_lzx_block(Bytes, window_bits~ : Int, expected~ : Int, limits? : Limits) -> Bytes raise MspackError
+
+pub fn decode_mszip_block(Bytes, expected~ : Int, limits? : Limits) -> Bytes raise MspackError
+
 pub let default_limits : Limits
 
 pub fn detect(Bytes) -> String
+
+pub fn extract_cab_entry(Bytes, ArchiveEntry, limits? : Limits) -> Bytes raise MspackError
+
+pub fn inspect_cab_blocks(Bytes, ArchiveEntry, limits? : Limits) -> Array[CabBlock] raise MspackError
+
+pub fn inspect_chm(Bytes) -> (ChmHeader, ChmDirectory) raise MspackError
 
 pub fn list(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
 
 pub fn list_cab(Bytes) -> Array[ArchiveEntry] raise MspackError
 
+pub fn list_chm_directory(Bytes, ChmHeader, ChmDirectory, limits? : Limits) -> Array[ArchiveEntry] raise MspackError
+
 pub fn read_cab(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
 
 pub fn read_chm(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
+
+pub fn read_chm_entries(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
 
 // Errors
 pub suberror MspackError {
@@ -35,6 +53,34 @@ pub struct ArchiveListing {
   warnings : Array[String]
 } derive(Show)
 
+pub struct BitReader {
+  data : Bytes
+  mut byte_pos : Int
+  mut bit_buffer : UInt
+  mut bits : Int
+} derive(Show)
+pub fn BitReader::align_word(Self) -> Unit raise MspackError
+pub fn BitReader::bytes(Self, Int) -> (Self, Bytes) raise MspackError
+pub fn BitReader::new(Bytes) -> Self
+pub fn BitReader::read(Self, Int) -> Int raise MspackError
+
+pub struct CabBlock {
+  offset : Int
+  checksum : UInt
+  compressed_size : Int
+  uncompressed_size : Int
+  compression : Int
+} derive(Eq, Show)
+
+pub struct ChmDirectory {
+  version : Int
+  chunk_size : Int
+  first_chunk : Int
+  last_chunk : Int
+  listing_offset : Int
+  listing_length : Int
+} derive(Eq, Show)
+
 pub struct ChmHeader {
   version : Int
   dir_offset : Int
@@ -49,11 +95,28 @@ pub struct Extracted {
   data : Bytes
 } derive(Show)
 
+pub struct HuffmanTable {
+  lengths : Array[Int]
+  codes : Array[Int]
+  max_bits : Int
+} derive(Show)
+pub fn HuffmanTable::build(Array[Int]) -> Self raise MspackError
+pub fn HuffmanTable::decode(Self, BitReader) -> (BitReader, Int) raise MspackError
+
 pub struct Limits {
   max_entries : Int
   max_output : Int
   max_window : Int
 } derive(Show)
+
+pub struct LzxWindow {
+  size : Int
+  mut position : Int
+  data : Array[Byte]
+} derive(Show)
+pub fn LzxWindow::copy(Self, Int, Int) -> Unit raise MspackError
+pub fn LzxWindow::new(Int) -> Self raise MspackError
+pub fn LzxWindow::put(Self, Byte) -> Unit
 
 pub struct Reader {
   data : Bytes
