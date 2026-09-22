@@ -195,6 +195,9 @@ pub fn extract_cab_entry(
     } else {
       raise MspackError("CAB compression method is not implemented")
     }
+    if output.length() + decoded.length() > limits.max_output {
+      raise MspackError("CAB output exceeds limit")
+    }
     for i in 0..<decoded.length() {
       output.push(decoded[i])
     }
