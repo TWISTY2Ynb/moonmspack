@@ -170,45 +170,6 @@ fn read_chm_directory_header(
 
 ///|
 pub fn inspect_chm(data : Bytes) -> (ChmHeader, ChmDirectory) raise MspackError {
-  if data.length() < 76 {
-    raise MspackError("truncated CHM header")
-  }
-  let r = Reader::new(data)
-  let (r, a) = r.u8()
-  let (r, b) = r.u8()
-  let (r, c) = r.u8()
-  let (r, d) = r.u8()
-  if a != 0x49 || b != 0x54 || c != 0x53 || d != 0x46 {
-    raise MspackError("invalid CHM magic")
-  }
-  let (r, version) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, off_lo) = r.u32le()
-  let (r, off_hi) = r.u32le()
-  let (r, len_lo) = r.u32le()
-  let (r, len_hi) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  if off_hi != 0 || len_hi != 0 {
-    raise MspackError("CHM offsets exceed supported word size")
-  }
-  let header = {
-    version: version.to_int(),
-    dir_offset: off_lo.to_int(),
-    dir_length: len_lo.to_int(),
-    data_offset: 0,
-    chunk_size: 0,
-    lang_id: 0,
-    num_chunks: 0,
-  }
-  checked_range(data.length(), header.dir_offset, header.dir_length)
+  let header = parse_chm_header(data)
   (header, read_chm_directory_header(data, header))
 }
