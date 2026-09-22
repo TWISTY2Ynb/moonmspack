@@ -1,0 +1,5 @@
+// import {
+//   "TWISTY2Ynb/moonmspack" @lib,
+// }
+
+pkgtype(kind: "executable")

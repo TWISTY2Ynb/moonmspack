@@ -1,0 +1,211 @@
+Warning: [0020]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\cab.mbt:27:17 ]
+    │
+ 27 │   if cb_cabinet.to_int() > data.length() {
+    │                 ───┬──  
+    │                    ╰──── Warning (deprecated): Use `reinterpret_as_int` instead
+────╯
+Warning: [0002]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\cab.mbt:50:7 ]
+    │
+ 50 │   let folder_start = rr.at()
+    │       ──────┬─────  
+    │             ╰─────── Warning (unused_value): Unused variable 'folder_start'
+────╯
+Warning: [0020]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\cab.mbt:56:28 ]
+    │
+ 56 │     folders.push((data_off.to_int(), blocks, comp))
+    │                            ───┬──  
+    │                               ╰──── Warning (deprecated): Use `reinterpret_as_int` instead
+────╯
+Warning: [0020]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\cab.mbt:59:32 ]
+    │
+ 59 │   let files_start = coff_files.to_int()
+    │                                ───┬──  
+    │                                   ╰──── Warning (deprecated): Use `reinterpret_as_int` instead
+────╯
+Warning: [0020]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\cab.mbt:87:18 ]
+    │
+ 87 │       size: size.to_int(),
+    │                  ───┬──  
+    │                     ╰──── Warning (deprecated): Use `reinterpret_as_int` instead
+────╯
+Warning: [0020]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\cab.mbt:89:19 ]
+    │
+ 89 │       offset: off.to_int(),
+    │                   ───┬──  
+    │                      ╰──── Warning (deprecated): Use `reinterpret_as_int` instead
+────╯
+Warning: [0027]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:11:10 ]
+    │
+ 11 │ } derive(Show)
+    │          ──┬─  
+    │            ╰─── Warning (deprecated_syntax): `derive(Show)` is deprecated. Use `derive(Debug)` or manually implement the `Show` trait instead.
+────╯
+Warning: [0020]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:60:9 ]
+    │
+ 60 │   (r, a.to_uint() | (b.to_uint() << 16))
+    │         ───┬───  
+    │            ╰───── Warning (deprecated): Use `reinterpret_as_uint` instead
+────╯
+Warning: [0020]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:60:24 ]
+    │
+ 60 │   (r, a.to_uint() | (b.to_uint() << 16))
+    │                        ───┬───  
+    │                           ╰───── Warning (deprecated): Use `reinterpret_as_uint` instead
+────╯
+Warning: [0027]
+    ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:97:10 ]
+    │
+ 97 │ } derive(Show)
+    │          ──┬─  
+    │            ╰─── Warning (deprecated_syntax): `derive(Show)` is deprecated. Use `derive(Debug)` or manually implement the `Show` trait instead.
+────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:108:3 ]
+     │
+ 108 │   pub name : String
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field name is public by default
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:109:3 ]
+     │
+ 109 │   pub size : Int
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field size is public by default
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:110:3 ]
+     │
+ 110 │   pub compressed_size : Int
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field compressed_size is public by default
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:111:3 ]
+     │
+ 111 │   pub offset : Int
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field offset is public by default
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:112:3 ]
+     │
+ 112 │   pub folder : Int
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field folder is public by default
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:113:3 ]
+     │
+ 113 │   pub flags : Int
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field flags is public by default
+─────╯
+Warning: [0027]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:114:10 ]
+     │
+ 114 │ } derive(Show, Eq)
+     │          ──┬─  
+     │            ╰─── Warning (deprecated_syntax): `derive(Show)` is deprecated. Use `derive(Debug)` or manually implement the `Show` trait instead.
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:118:3 ]
+     │
+ 118 │   pub format : String
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field format is public by default
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:119:3 ]
+     │
+ 119 │   pub entries : Array[ArchiveEntry]
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field entries is public by default
+─────╯
+Warning: [0020]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:119:17 ]
+     │
+ 119 │   pub entries : Array[ArchiveEntry]
+     │                 ─────────┬─────────  
+     │                          ╰─────────── Warning (deprecated): Use Debug instead of Show for debugging purposes. See https://github.com/moonbitlang/core/blob/main/debug/README.mbt.md
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:120:3 ]
+     │
+ 120 │   pub warnings : Array[String]
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field warnings is public by default
+─────╯
+Warning: [0020]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:120:18 ]
+     │
+ 120 │   pub warnings : Array[String]
+     │                  ──────┬──────  
+     │                        ╰──────── Warning (deprecated): Use Debug instead of Show for debugging purposes. See https://github.com/moonbitlang/core/blob/main/debug/README.mbt.md
+─────╯
+Warning: [0027]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:121:10 ]
+     │
+ 121 │ } derive(Show)
+     │          ──┬─  
+     │            ╰─── Warning (deprecated_syntax): `derive(Show)` is deprecated. Use `derive(Debug)` or manually implement the `Show` trait instead.
+─────╯
+Warning: [0009]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:124:12 ]
+     │
+ 124 │ pub struct Extracted {
+     │            ────┬────  
+     │                ╰────── Warning (struct_never_constructed): The struct Extracted is never constructed
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:125:3 ]
+     │
+ 125 │   pub entry : ArchiveEntry
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field entry is public by default
+─────╯
+Warning: [0008]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:126:3 ]
+     │
+ 126 │   pub data : Bytes
+     │   ─┬─  
+     │    ╰─── Warning (redundant_modifier): The public modifier is redundant here since field data is public by default
+─────╯
+Warning: [0027]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:127:10 ]
+     │
+ 127 │ } derive(Show)
+     │          ──┬─  
+     │            ╰─── Warning (deprecated_syntax): `derive(Show)` is deprecated. Use `derive(Debug)` or manually implement the `Show` trait instead.
+─────╯
+Warning: [0001]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:141:4 ]
+     │
+ 141 │ fn append_bytes(dst : Array[Byte], src : Bytes) -> Unit {
+     │    ──────┬─────  
+     │          ╰─────── Warning (unused_value): Unused function 'append_bytes'
+─────╯
+Warning: [0001]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:148:4 ]
+     │
+ 148 │ fn bytes_to_array(data : Bytes) -> Array[Byte] {
+     │    ───────┬──────  
+     │           ╰──────── Warning (unused_value): Unused function 'bytes_to_array'
+─────╯
+Warning: [0001]
+     ╭─[ C:\Users\42673\Desktop\工作区\随用随清\moonmspack\reader.mbt:157:4 ]
+     │
+ 157 │ fn array_to_bytes(data : Array[Byte]) -> Bytes {
+     │    ───────┬──────  
+     │           ╰──────── Warning (unused_value): Unused function 'array_to_bytes'
+─────╯
+Finished. moon: ran 3 tasks, now up to date (30 warnings, 0 errors)
