@@ -503,3 +503,59 @@ pub fn lzx_literal(byte : Byte) -> LzxToken {
 pub fn lzx_match(distance~ : Int, length~ : Int) -> LzxToken {
   Match(distance~, length~)
 }
+
+///|
+/// Parsed LZX block header.
+pub struct LzxBlockHeader {
+  pub kind : Int
+  pub length : Int
+  pub aligned : Bool
+} derive(Show, Eq)
+
+///|
+/// Read an LZX block header from a bit reader.
+pub fn read_lzx_block_header(
+  bits : BitReader,
+) -> (BitReader, LzxBlockHeader) raise MspackError {
+  let kind = bits.read(3)
+  let low = bits.read(16)
+  let high = bits.read(8)
+  let length = low | (high << 16)
+  if kind < lzx_block_verbatim || kind > lzx_block_uncompressed {
+    raise MspackError("invalid LZX block type")
+  }
+  { kind, length, aligned: kind == lzx_block_aligned, }
+}
+
+///|
+/// Return the LZX block header size in bytes for diagnostics.
+pub fn lzx_header_bytes() -> Int {
+  4
+}
+
+///|
+/// Validate an LZX block header against configured output limits.
+pub fn validate_lzx_block_header(
+  header : LzxBlockHeader,
+  limits? : Limits = default_limits,
+) -> Unit raise MspackError {
+  if header.length < 0 || header.length > limits.max_output {
+    raise MspackError("LZX block exceeds output limit")
+  }
+  if header.kind == lzx_block_aligned && !header.aligned {
+    raise MspackError("invalid aligned LZX block")
+  }
+}
+
+///|
+/// Read and validate a bounded LZX block header.
+pub fn inspect_lzx_block(
+  data : Bytes,
+  limits? : Limits = default_limits,
+) -> LzxBlockHeader raise MspackError {
+  let bits = BitReader::new(data)
+  let (bits, header) = read_lzx_block_header(bits)
+  ignore(bits)
+  validate_lzx_block_header(header, limits~)
+  header
+}
