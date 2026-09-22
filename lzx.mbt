@@ -46,6 +46,18 @@ pub struct HuffmanTable {
 } derive(Show)
 
 ///|
+/// Reverse the low `width` bits of a canonical Huffman code.
+fn reverse_huffman_bits(value : Int, width : Int) -> Int {
+  let mut source = value
+  let mut result = 0
+  for _ in 0..<width {
+    result = (result << 1) | (source & 1)
+    source = source >> 1
+  }
+  result
+}
+
+///|
 pub fn HuffmanTable::build(
   lengths : Array[Int],
 ) -> HuffmanTable raise MspackError {
@@ -78,7 +90,7 @@ pub fn HuffmanTable::build(
   for i in 0..<lengths.length() {
     let n = lengths[i]
     if n > 0 {
-      codes[i] = next[n]
+      codes[i] = reverse_huffman_bits(next[n], n)
       next[n] = next[n] + 1
     }
   }
