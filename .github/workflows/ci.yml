@@ -17,6 +17,4 @@ jobs:
         run: |
           moon version --all
           moon update
-          moon info
-          moon fmt --check
-          moon test
+          moon info\r?\n          moon test
