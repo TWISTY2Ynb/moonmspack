@@ -120,3 +120,15 @@ test "CAB block inspection reports stored metadata" {
   assert_eq(blocks[0].compressed_size, 4)
   assert_eq(blocks[0].uncompressed_size, 4)
 }
+
+///|
+test "LZX token emission preserves literals and matches" {
+  let window = @moonmspack.LzxWindow::new(15)
+  let tokens : Array[@moonmspack.LzxToken] = [
+    @moonmspack.lzx_literal(65),
+    @moonmspack.lzx_literal(66),
+    @moonmspack.lzx_match(distance=2, length=4),
+  ]
+  let output = @moonmspack.emit_lzx_tokens(window, tokens)
+  assert_eq(output.to_string(), "b\"ABABAB\"")
+}

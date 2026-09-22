@@ -420,3 +420,86 @@ pub fn lzx_match_distance(
     distance
   }
 }
+
+///|
+/// A decoded LZX token, either a literal byte or a window match.
+pub enum LzxToken {
+  Literal(Byte)
+  Match(distance~ : Int, length~ : Int)
+} derive(Show, Eq)
+
+///|
+/// Emit decoded tokens into a sliding LZX window.
+pub fn emit_lzx_tokens(
+  window : LzxWindow,
+  tokens : Array[LzxToken],
+  limits? : Limits = default_limits,
+) -> Bytes raise MspackError {
+  let output : Array[Byte] = []
+  for token in tokens {
+    match token {
+      Literal(byte) => {
+        if output.length() >= limits.max_output {
+          raise MspackError("LZX output exceeds limit")
+        }
+        window.put(byte)
+        output.push(byte)
+      }
+      Match(distance~, length~) => {
+        if length < lzx_min_match || length > lzx_max_match {
+          raise MspackError("invalid LZX match length")
+        }
+        if output.length() + length > limits.max_output {
+          raise MspackError("LZX output exceeds limit")
+        }
+        let start = window.position
+        window.copy(distance, length)
+        for i in 0..<length {
+          output.push(window.data[(start + i) % window.size])
+        }
+      }
+    }
+  }
+  Bytes::from_array(output)
+}
+
+///|
+/// Decode an LZX symbol pair into a literal or match token.
+pub fn lzx_token_from_symbols(
+  main_symbol : Int,
+  length_symbol : Int,
+  distance : Int,
+) -> LzxToken raise MspackError {
+  if main_symbol < 0 || main_symbol >= lzx_num_chars {
+    let length = lzx_match_length(length_symbol)
+    Match(distance~, length~)
+  } else {
+    Literal(main_symbol.to_byte())
+  }
+}
+
+///|
+/// Validate a token stream before emission.
+pub fn validate_lzx_tokens(tokens : Array[LzxToken]) -> Unit raise MspackError {
+  for token in tokens {
+    match token {
+      Literal(_) => ()
+      Match(distance~, length~) =>
+        if distance <= 0 || length < lzx_min_match || length > lzx_max_match {
+          raise MspackError("invalid LZX token")
+        }
+    }
+  }
+}
+
+///|
+/// Construct a literal token for callers outside the package.
+pub fn lzx_literal(byte : Byte) -> LzxToken {
+  Literal(byte)
+}
+
+///|
+/// Construct a match token for callers outside the package.
+pub fn lzx_match(distance~ : Int, length~ : Int) -> LzxToken {
+  Match(distance~, length~)
+}
