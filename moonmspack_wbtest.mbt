@@ -92,3 +92,29 @@ test "invalid entry ranges" {
     _ => ()
   }
 }
+
+///|
+test "container and budget boundaries" {
+  let entries : Array[ArchiveEntry] = [
+    {
+      name: "zero",
+      size: 0,
+      compressed_size: 0,
+      offset: 0,
+      folder: 3,
+      flags: 2,
+    },
+  ]
+  let listing : ArchiveListing = { format: "CAB", entries, warnings: [], }
+  assert_eq(container_size(listing, 3), 0)
+  assert_eq(count_entries_with_flags(listing, 2), 1)
+  assert_eq(count_entries_with_flags(listing, 4), 0)
+  assert_true(within_output_budget(listing, 0))
+  assert_eq(entries_by_size(listing, 0, 0).length(), 1)
+  assert_eq(take_archive_entries(listing, -1).length(), 0)
+  validate_listing(listing, limits={
+    max_entries: 1,
+    max_output: 0,
+    max_window: 1,
+  })
+}
