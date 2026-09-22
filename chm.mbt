@@ -9,11 +9,18 @@ pub struct ChmHeader {
 } derive(Show, Eq)
 
 ///|
-pub fn read_chm(
-  data : Bytes,
-  limits? : Limits = default_limits,
-) -> ArchiveListing raise MspackError {
-  if data.length() < 76 {
+fn chm_u64(reader : Reader) -> (Reader, Int) raise MspackError {
+  let (reader, low) = reader.u32le()
+  let (reader, high) = reader.u32le()
+  if high != 0 {
+    raise MspackError("CHM 64-bit offset exceeds supported range")
+  }
+  (reader, low.to_int())
+}
+
+///|
+fn parse_chm_header(data : Bytes) -> ChmHeader raise MspackError {
+  if data.length() < 0x58 {
     raise MspackError("truncated CHM header")
   }
   let r = Reader::new(data)
@@ -25,36 +32,41 @@ pub fn read_chm(
     raise MspackError("invalid CHM magic")
   }
   let (r, version) = r.u32le()
+  let (r, header_length) = r.u32le()
   let (r, _) = r.u32le()
   let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, dir_offset_lo) = r.u32le()
-  let (r, dir_offset_hi) = r.u32le()
-  let (r, dir_len_lo) = r.u32le()
-  let (r, dir_len_hi) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let (r, _) = r.u32le()
-  let offset = dir_offset_lo.to_int()
-  let length = dir_len_lo.to_int()
-  if dir_offset_hi != 0 || dir_len_hi != 0 {
-    raise MspackError("CHM offsets exceed supported word size")
+  let (r, lang_id) = r.u32le()
+  let r = r.skip(32)
+  let (r, _) = chm_u64(r)
+  let (r, _) = chm_u64(r)
+  let (r, dir_offset) = chm_u64(r)
+  let (r, dir_length) = chm_u64(r)
+  let (r, _) = chm_u64(r)
+  if header_length.to_int() < 0x58 || header_length.to_int() > data.length() {
+    raise MspackError("invalid CHM header length")
   }
-  checked_range(data.length(), offset, length)
-  if length > limits.max_output {
+  checked_range(data.length(), dir_offset, dir_length)
+  {
+    version: version.to_int(),
+    dir_offset,
+    dir_length,
+    chunk_size: 0,
+    lang_id: lang_id.to_int(),
+    num_chunks: 0,
+  }
+}
+
+///|
+pub fn read_chm(
+  data : Bytes,
+  limits? : Limits = default_limits,
+) -> ArchiveListing raise MspackError {
+  let header = parse_chm_header(data)
+  if header.dir_length > limits.max_output {
     raise MspackError("CHM directory exceeds limit")
   }
-  let warnings = []
-  if version.to_int() != 3 {
-    warnings.push("unusual CHM version")
-  }
-  let entries : Array[ArchiveEntry] = []
-  { format: "CHM", entries, warnings, }
+  let warnings = if header.version != 3 { ["unusual CHM version"] } else { [] }
+  { format: "CHM", entries: [], warnings, }
 }
 
 ///|
