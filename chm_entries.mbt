@@ -133,3 +133,18 @@ pub fn list_chm_directory(
     entries
   }
 }
+
+///|
+/// Read a CHM header and enumerate its uncompressed directory entries.
+pub fn read_chm_entries(
+  data : Bytes,
+  limits? : Limits = default_limits,
+) -> ArchiveListing raise MspackError {
+  let (header, directory) = inspect_chm(data)
+  let entries = list_chm_directory(data, header, directory, limits~)
+  {
+    format: "CHM",
+    entries,
+    warnings: ["compressed CHM content requires LZX decoding"],
+  }
+}
