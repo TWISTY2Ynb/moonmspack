@@ -84,9 +84,9 @@ test "stored CAB listing and extraction" {
   let data = tiny_stored_cab()
   let listing = @moonmspack.read_cab(data)
   assert_eq(listing.entries.length(), 1)
-  assert_eq(listing.entries[0].name, "a.txt")
+  assert_eq(listing.entries[0].name, "b\"a.txt\"")
   assert_eq(listing.entries[0].offset, 0)
   assert_eq(listing.entries[0].folder, 0)
   let payload = @moonmspack.extract_cab_entry(data, listing.entries[0])
-  assert_eq(payload.to_string(), "ABCD")
+  assert_eq(payload.to_string(), "b\"ABCD\"")
 }

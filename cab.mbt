@@ -7,6 +7,7 @@ pub fn read_cab(
   let (r, m0) = r.u8()
   let (r, m1) = r.u8()
   let (r, m2) = r.u8()
+  let (r, _) = r.u8()
   if m0 != 0x4D || m1 != 0x53 || m2 != 0x43 {
     raise MspackError("invalid CAB magic")
   }
@@ -110,6 +111,7 @@ fn cab_folders(data : Bytes) -> Array[(Int, Int, Int)] raise MspackError {
   let (r, m0) = r.u8()
   let (r, m1) = r.u8()
   let (r, m2) = r.u8()
+  let (r, _) = r.u8()
   if m0 != 0x4D || m1 != 0x53 || m2 != 0x43 {
     raise MspackError("invalid CAB magic")
   }
