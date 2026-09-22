@@ -16,6 +16,8 @@ pub fn detect(Bytes) -> String
 
 pub fn extract_cab_entry(Bytes, ArchiveEntry, limits? : Limits) -> Bytes raise MspackError
 
+pub fn extract_chm_entry(Bytes, ChmHeader, ArchiveEntry, limits? : Limits) -> Bytes raise MspackError
+
 pub fn inspect_cab_blocks(Bytes, ArchiveEntry, limits? : Limits) -> Array[CabBlock] raise MspackError
 
 pub fn inspect_chm(Bytes) -> (ChmHeader, ChmDirectory) raise MspackError
@@ -85,6 +87,7 @@ pub struct ChmHeader {
   version : Int
   dir_offset : Int
   dir_length : Int
+  data_offset : Int
   chunk_size : Int
   lang_id : Int
   num_chunks : Int
