@@ -90,3 +90,33 @@ test "stored CAB listing and extraction" {
   let payload = @moonmspack.extract_cab_entry(data, listing.entries[0])
   assert_eq(payload.to_string(), "b\"ABCD\"")
 }
+
+///|
+test "huffman canonical codes and invalid compressed block" {
+  let table = @moonmspack.HuffmanTable::build([1, 1])
+  let bits = @moonmspack.BitReader::new(Bytes::from_array([0]))
+  let (_, symbol) = table.decode(bits)
+  assert_eq(symbol, 0)
+  try {
+    ignore(
+      @moonmspack.decode_lzx_block(
+        Bytes::from_array([0, 0, 0, 0]),
+        window_bits=15,
+        expected=1,
+      ),
+    )
+    fail("accepted unsupported compressed LZX block")
+  } catch {
+    _ => ()
+  }
+}
+
+///|
+test "CAB block inspection reports stored metadata" {
+  let data = tiny_stored_cab()
+  let listing = @moonmspack.read_cab(data)
+  let blocks = @moonmspack.inspect_cab_blocks(data, listing.entries[0])
+  assert_eq(blocks.length(), 1)
+  assert_eq(blocks[0].compressed_size, 4)
+  assert_eq(blocks[0].uncompressed_size, 4)
+}
