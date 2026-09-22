@@ -290,3 +290,79 @@ pub fn lzx_match_length(symbol : Int) -> Int raise MspackError {
     lzx_min_match + symbol
   }
 }
+
+///|
+/// Decode a run of LZX code lengths using a pretree.
+pub fn decode_lzx_code_lengths(
+  bits : BitReader,
+  pretree : HuffmanTable,
+  count : Int,
+  previous? : Int = 0,
+) -> (BitReader, Array[Int]) raise MspackError {
+  if count < 0 || count > 4096 {
+    raise MspackError("invalid LZX code length count")
+  }
+  let result : Array[Int] = []
+  let mut cursor = bits
+  let mut last = previous
+  while result.length() < count {
+    let (next, symbol) = pretree.decode(cursor)
+    cursor = next
+    if symbol <= 16 {
+      let delta = cursor.read(4)
+      let value = (last - delta + 17) % 17
+      result.push(value)
+      last = value
+    } else if symbol == 17 {
+      let extra = cursor.read(4)
+      let run = extra + 4
+      if result.length() + run > count {
+        raise MspackError("LZX code length run exceeds tree")
+      }
+      for _ in 0..<run {
+        result.push(0)
+      }
+      last = 0
+    } else if symbol == 18 {
+      let extra = cursor.read(5)
+      let run = extra + 20
+      if result.length() + run > count {
+        raise MspackError("LZX code length run exceeds tree")
+      }
+      for _ in 0..<run {
+        result.push(0)
+      }
+      last = 0
+    } else {
+      let extra = cursor.read(1)
+      let run = extra + 4
+      if result.length() + run > count {
+        raise MspackError("LZX code length run exceeds tree")
+      }
+      for _ in 0..<run {
+        result.push(last)
+      }
+    }
+  }
+  (cursor, result)
+}
+
+///|
+/// Validate a Huffman tree before it is used for an LZX block.
+pub fn validate_lzx_tree(lengths : Array[Int]) -> Unit raise MspackError {
+  if lengths.length() == 0 || lengths.length() > 4096 {
+    raise MspackError("invalid LZX tree size")
+  }
+  let mut nonzero = 0
+  for length in lengths {
+    if length < 0 || length > 16 {
+      raise MspackError("invalid LZX tree code length")
+    }
+    if length > 0 {
+      nonzero = nonzero + 1
+    }
+  }
+  if nonzero == 0 {
+    raise MspackError("empty LZX huffman tree")
+  }
+}
