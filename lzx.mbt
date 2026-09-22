@@ -211,3 +211,82 @@ pub fn BitReader::bytes(
   }
   ({ ..self, byte_pos: self.byte_pos + count, }, Bytes::from_array(out))
 }
+
+///|
+/// LZX format constants shared by block decoders.
+pub let lzx_min_match : Int = 2
+
+///|
+pub let lzx_max_match : Int = 257
+
+///|
+pub let lzx_num_chars : Int = 256
+
+///|
+pub let lzx_block_verbatim : Int = 1
+
+///|
+pub let lzx_block_aligned : Int = 2
+
+///|
+pub let lzx_block_uncompressed : Int = 3
+
+///|
+pub let lzx_pretree_symbols : Int = 20
+
+///|
+pub let lzx_aligned_symbols : Int = 8
+
+///|
+pub let lzx_primary_lengths : Int = 7
+
+///|
+pub let lzx_secondary_lengths : Int = 249
+
+///|
+pub let lzx_frame_size : Int = 32768
+
+///|
+/// Return the number of position slots for an LZX window.
+pub fn lzx_position_slots(window_bits : Int) -> Int raise MspackError {
+  if window_bits < 15 || window_bits > 21 {
+    raise MspackError("unsupported LZX window size")
+  }
+  if window_bits == 15 {
+    30
+  } else if window_bits == 16 {
+    32
+  } else {
+    32 + (window_bits - 17) * 8
+  }
+}
+
+///|
+/// Build the extra-bit table for the LZX position slots.
+pub fn lzx_position_extra_bits(
+  window_bits : Int,
+) -> Array[Int] raise MspackError {
+  let slots = lzx_position_slots(window_bits)
+  let result : Array[Int] = []
+  for slot in 0..<slots {
+    if slot < 4 {
+      result.push(0)
+    } else {
+      result.push(slot / 2 - 1)
+    }
+  }
+  result
+}
+
+///|
+/// Convert an LZX length symbol into a match length.
+pub fn lzx_match_length(symbol : Int) -> Int raise MspackError {
+  if symbol < 0 || symbol >= lzx_secondary_lengths {
+    raise MspackError("invalid LZX length symbol")
+  }
+  if symbol < lzx_primary_lengths {
+    lzx_min_match + symbol
+  } else {
+    lzx_min_match + symbol
+  }
+}
