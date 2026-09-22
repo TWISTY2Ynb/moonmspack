@@ -132,3 +132,16 @@ test "LZX token emission preserves literals and matches" {
   let output = @moonmspack.emit_lzx_tokens(window, tokens)
   assert_eq(output.to_string(), "b\"ABABAB\"")
 }
+
+///|
+test "stateful LZX decoder tracks repeated offsets" {
+  let decoder = @moonmspack.LzxDecoder::new()
+  decoder.emit(@moonmspack.lzx_literal(65))
+  decoder.emit(@moonmspack.lzx_literal(66))
+  decoder.emit(@moonmspack.lzx_match(distance=2, length=4))
+  assert_eq(decoder.output_size(), 6)
+  assert_eq(decoder.recent0, 2)
+  decoder.reset()
+  assert_eq(decoder.output_size(), 0)
+  assert_eq(decoder.recent0, 1)
+}
