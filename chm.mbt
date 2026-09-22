@@ -42,7 +42,7 @@ fn parse_chm_header(data : Bytes) -> ChmHeader raise MspackError {
   let (r, _) = chm_u64(r)
   let (r, dir_offset) = chm_u64(r)
   let (r, dir_length) = chm_u64(r)
-  let (r, _) = chm_u64(r)
+  let (r, data_offset) = chm_u64(r)
   if header_length.to_int() < 0x58 || header_length.to_int() > data.length() {
     raise MspackError("invalid CHM header length")
   }
