@@ -171,3 +171,50 @@ pub fn extract_chm_entry(
   }
   Bytes::from_array(output)
 }
+
+///|
+/// A bounded CHM data section descriptor.
+pub struct ChmSection {
+  pub index : Int
+  pub offset : Int
+  pub length : Int
+} derive(Show, Eq)
+
+///|
+/// Describe a CHM section using the absolute data offset.
+pub fn chm_section(
+  header : ChmHeader,
+  index : Int,
+  length : Int,
+  limits? : Limits = default_limits,
+) -> ChmSection raise MspackError {
+  if index < 0 || length < 0 || length > limits.max_output {
+    raise MspackError("invalid CHM section")
+  }
+  let offset = header.data_offset + index * 0x1000
+  if offset < header.data_offset {
+    raise MspackError("CHM section offset overflow")
+  }
+  { index, offset, length, }
+}
+
+///|
+/// Read a bounded range from a CHM section.
+pub fn read_chm_section(
+  data : Bytes,
+  section : ChmSection,
+  relative : Int,
+  length : Int,
+  limits? : Limits = default_limits,
+) -> Bytes raise MspackError {
+  if relative < 0 || length < 0 || length > limits.max_output {
+    raise MspackError("invalid CHM section range")
+  }
+  checked_range(section.length, relative, length)
+  checked_range(data.length(), section.offset + relative, length)
+  let out : Array[Byte] = []
+  for i in 0..<length {
+    out.push(data[section.offset + relative + i])
+  }
+  Bytes::from_array(out)
+}
