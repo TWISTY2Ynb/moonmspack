@@ -102,3 +102,98 @@ pub fn read_cab(
 pub fn list_cab(data : Bytes) -> Array[ArchiveEntry] raise MspackError {
   read_cab(data).entries
 }
+
+///|
+fn cab_folders(data : Bytes) -> Array[(Int, Int, Int)] raise MspackError {
+  let r = Reader::new(data)
+  let (r, m0) = r.u8()
+  let (r, m1) = r.u8()
+  let (r, m2) = r.u8()
+  if m0 != 0x4D || m1 != 0x53 || m2 != 0x43 {
+    raise MspackError("invalid CAB magic")
+  }
+  let (r, _) = r.u8()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, _) = r.u32le()
+  let (r, count) = r.u16le()
+  let (r, _) = r.u16le()
+  let (r, flags) = r.u16le()
+  let (r, _) = r.u16le()
+  let mut rr = r
+  if (flags & 1) != 0 {
+    let (x, n) = rr.u16le()
+    let (x, _) = x.u16le()
+    let (x, _) = x.u16le()
+    let x = x.skip(n)
+    rr = x
+  }
+  if (flags & 2) != 0 {
+    let (x, n) = rr.u16le()
+    let (x, _) = x.u16le()
+    let (x, _) = x.u16le()
+    let x = x.skip(n)
+    rr = x
+  }
+  if (flags & 4) != 0 {
+    let (x, _) = rr.u16le()
+    let (x, _) = x.u16le()
+    rr = x
+  }
+  let result : Array[(Int, Int, Int)] = []
+  for _ in 0..<count {
+    let (x, off) = rr.u32le()
+    let (x, blocks) = x.u16le()
+    let (x, typ) = x.u16le()
+    result.push((off.to_int(), blocks, typ))
+    rr = x
+  }
+  result
+}
+
+///|
+pub fn extract_cab_entry(
+  data : Bytes,
+  entry : ArchiveEntry,
+  limits? : Limits = default_limits,
+) -> Bytes raise MspackError {
+  let folders = cab_folders(data)
+  if entry.folder < 0 || entry.folder >= folders.length() {
+    raise MspackError("CAB folder index outside table")
+  }
+  let (offset, block_count, compression) = folders[entry.folder]
+  let mut cursor = offset
+  let output : Array[Byte] = []
+  for _ in 0..<block_count {
+    let block_start = cursor
+    let block_reader = Reader::new(data).seek(block_start)
+    let (block_reader, _) = block_reader.u32le()
+    let (block_reader, compressed) = block_reader.u16le()
+    let (block_reader, uncompressed) = block_reader.u16le()
+    let (block_reader, payload) = block_reader.bytes(compressed)
+    cursor = block_reader.at()
+    let method = compression & 0x000F
+    let decoded = if method == 0 {
+      payload
+    } else if method == 1 {
+      decode_mszip_block(payload, expected=uncompressed, limits~)
+    } else {
+      raise MspackError("CAB compression method is not implemented")
+    }
+    for i in 0..<decoded.length() {
+      output.push(decoded[i])
+    }
+  }
+  let begin = entry.offset
+  if begin < 0 || begin + entry.size > output.length() {
+    raise MspackError("CAB entry range exceeds decoded folder")
+  }
+  let selected : Array[Byte] = []
+  for i in begin..<(begin + entry.size) {
+    selected.push(output[i])
+  }
+  Bytes::from_array(selected)
+}
