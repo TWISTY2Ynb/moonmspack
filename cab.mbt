@@ -212,3 +212,52 @@ pub fn extract_cab_entry(
   }
   Bytes::from_array(selected)
 }
+
+///|
+/// Metadata for one CAB CFDATA block.
+pub struct CabBlock {
+  pub offset : Int
+  pub checksum : UInt
+  pub compressed_size : Int
+  pub uncompressed_size : Int
+  pub compression : Int
+} derive(Show, Eq)
+
+///|
+/// Inspect CFDATA blocks without decompressing them.
+pub fn inspect_cab_blocks(
+  data : Bytes,
+  entry : ArchiveEntry,
+  limits? : Limits = default_limits,
+) -> Array[CabBlock] raise MspackError {
+  let folders = cab_folders(data)
+  if entry.folder < 0 || entry.folder >= folders.length() {
+    raise MspackError("CAB folder index outside table")
+  }
+  let (offset, block_count, compression) = folders[entry.folder]
+  if block_count > limits.max_entries {
+    raise MspackError("CAB block count exceeds limit")
+  }
+  let result : Array[CabBlock] = []
+  let mut cursor = offset
+  for _ in 0..<block_count {
+    let block_offset = cursor
+    let r = Reader::new(data).seek(cursor)
+    let (r, checksum) = r.u32le()
+    let (r, compressed) = r.u16le()
+    let (r, uncompressed) = r.u16le()
+    if uncompressed > limits.max_output || compressed > limits.max_output {
+      raise MspackError("CAB block exceeds limit")
+    }
+    let (r, _) = r.bytes(compressed)
+    cursor = r.at()
+    result.push({
+      offset: block_offset,
+      checksum,
+      compressed_size: compressed,
+      uncompressed_size: uncompressed,
+      compression: compression & 0x000F,
+    })
+  }
+  result
+}
