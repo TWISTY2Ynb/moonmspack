@@ -24,3 +24,7 @@ keywords = [ ]
 preferred_target = "wasm"
 
 description = ""
+
+import {
+  "moonbit-community/flate@0.8.3",
+}

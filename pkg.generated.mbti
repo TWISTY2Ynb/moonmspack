@@ -1,0 +1,75 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "TWISTY2Ynb/moonmspack"
+
+// Values
+pub let default_limits : Limits
+
+pub fn detect(Bytes) -> String
+
+pub fn list(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
+
+pub fn list_cab(Bytes) -> Array[ArchiveEntry] raise MspackError
+
+pub fn read_cab(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
+
+pub fn read_chm(Bytes, limits? : Limits) -> ArchiveListing raise MspackError
+
+// Errors
+pub suberror MspackError {
+  MspackError(String)
+}
+
+// Types and methods
+pub struct ArchiveEntry {
+  name : String
+  size : Int
+  compressed_size : Int
+  offset : Int
+  folder : Int
+  flags : Int
+} derive(Eq, Show)
+
+pub struct ArchiveListing {
+  format : String
+  entries : Array[ArchiveEntry]
+  warnings : Array[String]
+} derive(Show)
+
+pub struct ChmHeader {
+  version : Int
+  dir_offset : Int
+  dir_length : Int
+  chunk_size : Int
+  lang_id : Int
+  num_chunks : Int
+} derive(Eq, Show)
+
+pub struct Extracted {
+  entry : ArchiveEntry
+  data : Bytes
+} derive(Show)
+
+pub struct Limits {
+  max_entries : Int
+  max_output : Int
+  max_window : Int
+} derive(Show)
+
+pub struct Reader {
+  data : Bytes
+  pos : Int
+} derive(Show)
+pub fn Reader::at(Self) -> Int
+pub fn Reader::bytes(Self, Int) -> (Self, Bytes) raise MspackError
+pub fn Reader::cstring(Self, Int) -> (Self, String) raise MspackError
+pub fn Reader::new(Bytes) -> Self
+pub fn Reader::remaining(Self) -> Int
+pub fn Reader::seek(Self, Int) -> Self raise MspackError
+pub fn Reader::skip(Self, Int) -> Self raise MspackError
+pub fn Reader::u16le(Self) -> (Self, Int) raise MspackError
+pub fn Reader::u32le(Self) -> (Self, UInt) raise MspackError
+pub fn Reader::u8(Self) -> (Self, Int) raise MspackError
+
+// Type aliases
+
+// Traits
