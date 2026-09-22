@@ -366,3 +366,57 @@ pub fn validate_lzx_tree(lengths : Array[Int]) -> Unit raise MspackError {
     raise MspackError("empty LZX huffman tree")
   }
 }
+
+///|
+/// Build and validate a decoding tree from serialized code lengths.
+pub fn build_lzx_tree(lengths : Array[Int]) -> HuffmanTable raise MspackError {
+  validate_lzx_tree(lengths)
+  HuffmanTable::build(lengths)
+}
+
+///|
+/// Decode a complete tree from a pretree-coded length stream.
+pub fn decode_lzx_tree(
+  bits : BitReader,
+  pretree : HuffmanTable,
+  symbols : Int,
+) -> (BitReader, HuffmanTable) raise MspackError {
+  let (bits, lengths) = decode_lzx_code_lengths(bits, pretree, symbols)
+  let tree = build_lzx_tree(lengths)
+  (bits, tree)
+}
+
+///|
+/// Return whether a block type uses the aligned offset tree.
+pub fn lzx_uses_aligned_tree(block_type : Int) -> Bool {
+  block_type == lzx_block_aligned
+}
+
+///|
+/// Convert an LZX slot and footer into a match distance.
+pub fn lzx_match_distance(
+  slot : Int,
+  footer : Int,
+  recent0 : Int,
+  recent1 : Int,
+  recent2 : Int,
+  window_bits : Int,
+) -> Int raise MspackError {
+  let extra = lzx_position_extra_bits(window_bits)
+  if slot < 0 || slot >= extra.length() {
+    raise MspackError("invalid LZX position slot")
+  }
+  if slot == 0 {
+    recent0
+  } else if slot == 1 {
+    recent1
+  } else if slot == 2 {
+    recent2
+  } else {
+    let distance = (1 << extra[slot]) + footer - 1
+    if distance <= 0 {
+      raise MspackError("invalid LZX match distance")
+    }
+    distance
+  }
+}
